@@ -1,0 +1,1 @@
+Student Management API built in Golang, demonstrating CRUD functionality and serving as a learning project for incremental enhancements.
