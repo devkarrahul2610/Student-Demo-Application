@@ -10,6 +10,7 @@ func main() {
 
 	initLogger()        // Initialize the logger
 	defer Logger.Sync() // Flush logs before exit
+	defer store.DB.Close()
 
 	// Optional seed data
 	store.createStudent(Student{FirstName: "Alice", LastName: "Wong", Email: "alice@example.com", Age: 20})
