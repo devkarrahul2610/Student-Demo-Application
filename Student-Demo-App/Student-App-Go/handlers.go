@@ -10,17 +10,29 @@ import (
 func (s *Store) handleStudents(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		students := s.listStudents()
+		students, err := s.listStudents()
+		if err != nil {
+			jsonResponse(w, http.StatusInternalServerError, false, nil, err.Error())
+			return
+		}
 		jsonResponse(w, http.StatusOK, true, students, "")
+		return
 
 	case http.MethodPost:
 		var st Student
 		if err := json.NewDecoder(r.Body).Decode(&st); err != nil {
-			jsonResponse(w, http.StatusBadRequest, false, nil, "invalid JSON payload")
+			jsonResponse(w, http.StatusBadRequest, false, nil, "invalid request body")
 			return
 		}
-		created := s.createStudent(st)
+
+		created, err := s.createStudent(st)
+		if err != nil {
+			jsonResponse(w, http.StatusInternalServerError, false, nil, err.Error())
+			return
+		}
+
 		jsonResponse(w, http.StatusCreated, true, created, "")
+		return
 
 	default:
 		jsonResponse(w, http.StatusMethodNotAllowed, false, nil, "method not allowed")
@@ -44,31 +56,37 @@ func (s *Store) handleStudentByID(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 
 	case http.MethodGet:
-		st, ok := s.getStudent(id)
-		if !ok {
-			jsonResponse(w, http.StatusNotFound, false, nil, "student not found")
+		st, err := s.getStudent(id)
+		if err != nil {
+			jsonResponse(w, http.StatusNotFound, false, nil, err.Error())
 			return
 		}
 		jsonResponse(w, http.StatusOK, true, st, "")
+		return
 	case http.MethodPut:
 		var update Student
 		if err := json.NewDecoder(r.Body).Decode(&update); err != nil {
-			jsonResponse(w, http.StatusBadRequest, false, nil, "invalid JSON payload")
+			jsonResponse(w, http.StatusBadRequest, false, nil, "invalid body")
 			return
 		}
-		st, ok := s.updateStudent(id, update)
-		if !ok {
-			jsonResponse(w, http.StatusNotFound, false, nil, "student not found")
+
+		st, err := s.updateStudent(id, update)
+		if err != nil {
+			jsonResponse(w, http.StatusNotFound, false, nil, err.Error())
 			return
 		}
+
 		jsonResponse(w, http.StatusOK, true, st, "")
+		return
 
 	case http.MethodDelete:
-		if !s.deleteStudent(id) {
-			jsonResponse(w, http.StatusNotFound, false, nil, "student not found")
+		err := s.deleteStudent(id)
+		if err != nil {
+			jsonResponse(w, http.StatusNotFound, false, nil, err.Error())
 			return
 		}
-		jsonResponse(w, http.StatusNoContent, true, nil, "")
+		jsonResponse(w, http.StatusOK, true, nil, "student deleted")
+		return
 
 	default:
 		jsonResponse(w, http.StatusMethodNotAllowed, false, nil, "method not allowed")
