@@ -12,18 +12,43 @@ type Store struct {
 	DB *sql.DB
 }
 
+func (s *Store) migrate() {
+	query := `
+        CREATE TABLE IF NOT EXISTS students (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            first_name VARCHAR(100) NOT NULL,
+            last_name  VARCHAR(100) NOT NULL,
+            email      VARCHAR(150) NOT NULL UNIQUE,
+            age        INT NOT NULL,
+            created_at DATETIME NOT NULL,
+            updated_at DATETIME NOT NULL
+        );
+    `
+	_, err := s.DB.Exec(query)
+	if err != nil {
+		log.Fatal("Migration failed:", err)
+	}
+
+	log.Println("Database migrated successfully!")
+}
+
 func NewStore() *Store {
 	dsn := "root:Rahul@123@tcp(127.0.0.1:3306)/studentdb?parseTime=true"
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
-		log.Fatal("Database connection error:", err)
+		log.Fatal("Error opening DB:", err)
 	}
 
-	if err = db.Ping(); err != nil {
-		log.Fatal("Database ping error:", err)
+	if err := db.Ping(); err != nil {
+		log.Fatal("Error connecting to DB:", err)
 	}
 
-	return &Store{DB: db}
+	log.Println("Connected to MySQL successfully!")
+
+	store := &Store{DB: db}
+	store.migrate() // <<--- call migrate on startup
+
+	return store
 }
 
 func (s *Store) createStudent(st Student) (*Student, error) {
