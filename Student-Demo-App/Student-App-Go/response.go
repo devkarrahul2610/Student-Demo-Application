@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 )
 
@@ -20,4 +21,8 @@ func jsonResponse(w http.ResponseWriter, status int, success bool, data interfac
 		Error:   errMsg,
 	}
 	json.NewEncoder(w).Encode(res)
+}
+
+func ErrValidation(msg string) error {
+	return errors.New(msg)
 }
