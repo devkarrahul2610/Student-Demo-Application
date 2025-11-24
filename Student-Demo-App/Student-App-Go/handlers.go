@@ -7,10 +7,18 @@ import (
 	"strings"
 )
 
-func (s *Store) handleStudents(w http.ResponseWriter, r *http.Request) {
+type StudentHandlers struct {
+	service *StudentService
+}
+
+func NewStudentHandlers(service *StudentService) *StudentHandlers {
+	return &StudentHandlers{service: service}
+}
+
+func (h *StudentHandlers) handleStudents(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		students, err := s.listStudents()
+		students, err := h.service.ListStudents()
 		if err != nil {
 			jsonResponse(w, http.StatusInternalServerError, false, nil, err.Error())
 			return
@@ -25,12 +33,11 @@ func (s *Store) handleStudents(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		created, err := s.createStudent(st)
+		created, err := h.service.CreateStudent(st)
 		if err != nil {
-			jsonResponse(w, http.StatusInternalServerError, false, nil, err.Error())
+			jsonResponse(w, http.StatusBadRequest, false, nil, err.Error())
 			return
 		}
-
 		jsonResponse(w, http.StatusCreated, true, created, "")
 		return
 
@@ -39,8 +46,7 @@ func (s *Store) handleStudents(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *Store) handleStudentByID(w http.ResponseWriter, r *http.Request) {
-	// URL format: /students/{id}
+func (h *StudentHandlers) handleStudentByID(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
 	if len(parts) != 2 {
 		jsonResponse(w, http.StatusNotFound, false, nil, "invalid path")
@@ -56,13 +62,14 @@ func (s *Store) handleStudentByID(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 
 	case http.MethodGet:
-		st, err := s.getStudent(id)
+		st, err := h.service.GetStudent(id)
 		if err != nil {
 			jsonResponse(w, http.StatusNotFound, false, nil, err.Error())
 			return
 		}
 		jsonResponse(w, http.StatusOK, true, st, "")
 		return
+
 	case http.MethodPut:
 		var update Student
 		if err := json.NewDecoder(r.Body).Decode(&update); err != nil {
@@ -70,19 +77,18 @@ func (s *Store) handleStudentByID(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		st, err := s.updateStudent(id, update)
+		st, err := h.service.UpdateStudent(id, update)
 		if err != nil {
-			jsonResponse(w, http.StatusNotFound, false, nil, err.Error())
+			jsonResponse(w, http.StatusBadRequest, false, nil, err.Error())
 			return
 		}
-
 		jsonResponse(w, http.StatusOK, true, st, "")
 		return
 
 	case http.MethodDelete:
-		err := s.deleteStudent(id)
+		err := h.service.DeleteStudent(id)
 		if err != nil {
-			jsonResponse(w, http.StatusNotFound, false, nil, err.Error())
+			jsonResponse(w, http.StatusBadRequest, false, nil, err.Error())
 			return
 		}
 		jsonResponse(w, http.StatusOK, true, nil, "student deleted")

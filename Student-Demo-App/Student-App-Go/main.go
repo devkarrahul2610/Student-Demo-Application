@@ -6,22 +6,32 @@ import (
 )
 
 func main() {
-	store := NewStore()
+	// Load configuration
+	cfg := LoadConfig()
 
-	initLogger()        // Initialize the logger
-	defer Logger.Sync() // Flush logs before exit
+	// DB connection & migration via Store (kept only for DB setup)
+	store := NewStore(cfg)
 	defer store.DB.Close()
 
-	// Optional seed data
-	store.createStudent(Student{FirstName: "Alice", LastName: "Wong", Email: "alice@example.com", Age: 20})
-	store.createStudent(Student{FirstName: "Bob", LastName: "Singh", Email: "bob@example.com", Age: 22})
+	// Initialize logger
+	initLogger()
+	defer Logger.Sync()
+
+	// Create Repository
+	repo := NewMySQLStudentRepository(store.DB)
+
+	// Create Service layer
+	service := NewStudentService(repo)
+
+	// Create Handlers
+	handlers := NewStudentHandlers(service)
 
 	// Register endpoints / routes
-	http.HandleFunc("/students", LoggingMiddleware(store.handleStudents))     // GET list, POST create
-	http.HandleFunc("/students/", LoggingMiddleware(store.handleStudentByID)) // GET/PUT/DELETE by ID
+	http.HandleFunc("/students", LoggingMiddleware(handlers.handleStudents))
+	http.HandleFunc("/students/", LoggingMiddleware(handlers.handleStudentByID))
 
 	// Start server
 	address := ":8080"
-	log.Println("Server running at http://localhost" + address)
+	log.Println("Server running at http://localhost" + cfg.ServerPort)
 	log.Fatal(http.ListenAndServe(address, nil))
 }
