@@ -1,4 +1,6 @@
-package main
+package student
+
+import "student/student-demo-app/response"
 
 type StudentService struct {
 	repo StudentRepository
@@ -15,7 +17,7 @@ func (s *StudentService) ListStudents() ([]Student, error) {
 func (s *StudentService) CreateStudent(st Student) (*Student, error) {
 	// Example validation layer (can expand later)
 	if st.FirstName == "" || st.LastName == "" {
-		return nil, ErrValidation("first name and last name are required")
+		return nil, response.ErrValidation("first name and last name are required")
 	}
 	return s.repo.CreateStudent(st)
 }
