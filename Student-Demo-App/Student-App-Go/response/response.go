@@ -1,4 +1,4 @@
-package main
+package response
 
 import (
 	"encoding/json"
@@ -12,7 +12,7 @@ type APIResponse struct {
 	Error   string      `json:"error,omitempty"`
 }
 
-func jsonResponse(w http.ResponseWriter, status int, success bool, data interface{}, errMsg string) {
+func JsonResponse(w http.ResponseWriter, status int, success bool, data interface{}, errMsg string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	res := APIResponse{

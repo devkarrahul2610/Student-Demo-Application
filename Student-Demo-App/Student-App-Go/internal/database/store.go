@@ -1,9 +1,10 @@
-package main
+package database
 
 import (
 	"database/sql"
 	"fmt"
 	"log"
+	"student/student-demo-app/internal/config"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -32,7 +33,7 @@ func (s *Store) migrate() {
 	log.Println("Database migrated successfully!")
 }
 
-func NewStore(cfg *Config) *Store {
+func NewStore(cfg *config.Config) *Store {
 
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true",
 		cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName,

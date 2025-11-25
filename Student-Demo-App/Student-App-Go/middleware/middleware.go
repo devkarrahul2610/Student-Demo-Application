@@ -1,7 +1,8 @@
-package main
+package middleware
 
 import (
 	"net/http"
+	"student/student-demo-app/logger"
 	"time"
 
 	"go.uber.org/zap"
@@ -28,7 +29,7 @@ func LoggingMiddleware(next http.HandlerFunc) http.HandlerFunc {
 
 		duration := time.Since(start)
 
-		Logger.Info("request completed",
+		logger.Logger.Info("request completed",
 			zap.String("method", r.Method),
 			zap.String("path", r.URL.Path),
 			zap.Int("status", recorder.status),

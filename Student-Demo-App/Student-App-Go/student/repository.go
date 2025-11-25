@@ -1,4 +1,4 @@
-package main
+package student
 
 type StudentRepository interface {
 	ListStudents() ([]Student, error)
