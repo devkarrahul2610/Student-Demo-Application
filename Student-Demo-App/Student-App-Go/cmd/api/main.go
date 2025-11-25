@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"student/student-demo-app/internal/cache"
 	"student/student-demo-app/internal/config"
 	"student/student-demo-app/internal/database"
 	"student/student-demo-app/logger"
@@ -13,6 +15,14 @@ import (
 func main() {
 	// Load configuration
 	cfg := config.LoadConfig()
+
+	// Initialize Redis
+	// Initialize Redis
+	cache.InitRedis(
+		fmt.Sprintf("%s:%s", cfg.RedisHost, cfg.RedisPort),
+		cfg.RedisPassword,
+		cfg.RedisDB,
+	)
 
 	// DB connection & migration via Store (kept only for DB setup)
 	store := database.NewStore(cfg)
